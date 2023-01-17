@@ -51,7 +51,7 @@ struct ViewControllerRepresentable: UIViewControllerRepresentable {
 func updateUIViewController(_ uiView: UIViewController,context: Context) {
         // leave this empty
 }
-@available(iOS 13.0.0, *)
+@available(iOS 13.0, *)
     internal func makeUIViewController(context: Context) -> UIViewController{
     RepositoryListViewController()
     }
