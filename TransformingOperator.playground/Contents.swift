@@ -15,9 +15,13 @@ Observable.of("A", "B", "C")
 print("----map----")
 Observable.of(Date())
     .map { date -> String in
+    print(date)
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd"
     dateFormatter.locale = Locale(identifier: "ko_KR")
+
+    print(dateFormatter.string(from: date))
+
     return dateFormatter.string(from: date)
 }
     .subscribe(onNext: {
@@ -38,7 +42,7 @@ struct 양궁선수: 선수 {
 let KOR = 양궁선수(점수: BehaviorSubject<Int>(value: 10)) // 초기값 가진채로 시작(직전 값 방출)
 let USA = 양궁선수(점수: BehaviorSubject<Int>(value: 8)) // 초기값 가진채로 시작(직전 값 방출)
 
-let 올림픽경기 = PublishSubject<선수>() // 빈 상태로 시작하여 새로운 값만을 Subscriber에게 방출
+let 올림픽경기 = PublishSubject < 선수 > () // 빈 상태로 시작하여 새로운 값만을 Subscriber에게 방출
 
 // 중첩된 옵저버블을 핸들링하고 싶을때 -> flatMap
 
@@ -68,7 +72,7 @@ struct 높이뛰기선수: 선수 {
 let 서울 = 높이뛰기선수(점수: BehaviorSubject<Int>(value: 7))
 let 제주 = 높이뛰기선수(점수: BehaviorSubject<Int>(value: 6))
 
-let 전국체전 = PublishSubject<선수>() // 전국체전 (서울 , 제주)
+let 전국체전 = PublishSubject < 선수 > () // 전국체전 (서울 , 제주)
 
 전국체전
     .flatMapLatest { 선수 in
@@ -98,24 +102,24 @@ struct 달리기선수: 선수 {
 let 김토끼 = 달리기선수(점수: BehaviorSubject<Int>(value: 0))
 let 박치타 = 달리기선수(점수: BehaviorSubject<Int>(value: 1))
 
-let 달리기100M = BehaviorSubject<선수>(value: 김토끼)
+let 달리기100M = BehaviorSubject < 선수 > (value: 김토끼)
 
 달리기100M
     .flatMapLatest { 선수 in
-        선수.점수
-            .materialize() // 이벤트까지 보여지는 출력 방식 !
-    }
+    선수.점수
+        .materialize() // 이벤트까지 보여지는 출력 방식 !
+}
     .filter {
-        guard let error = $0.error else {
-            return true
-        }
-        print(error)
-        return false // 에러 가졌을때 필터를 통과시켜 에러를 출력!
+    guard let error = $0.error else {
+        return true
     }
+    print(error)
+    return false // 에러 가졌을때 필터를 통과시켜 에러를 출력!
+}
     .dematerialize() // 이벤트 출력은 무시
-    .subscribe(onNext: {
-        print($0)
-    })
+.subscribe(onNext: {
+    print($0)
+})
     .disposed(by: disposeBag)
 
 김토끼.점수.onNext(1)
@@ -131,26 +135,26 @@ let list: [Int] = [1]
 
 input
     .flatMap {
-        $0 == nil ? Observable.empty() : Observable.just($0)
-    }
+    $0 == nil ? Observable.empty() : Observable.just($0)
+}
     .map { $0! } // 옵셔널 처리
-    .skip(while: { $0 != 0 }) // 0이 나올때 까지 Skip!
-    .take(11) // 11개만 받으라.
-    .toArray() // 이것들을 Array로 만들어줌
-    .asObservable() // toArray거치며 Single로 된거를 Observable로 변경
-    .map{
-        $0.map { "\($0)" }
-    }
+.skip(while: { $0 != 0 }) // 0이 나올때 까지 Skip!
+.take(11) // 11개만 받으라.
+.toArray() // 이것들을 Array로 만들어줌
+.asObservable() // toArray거치며 Single로 된거를 Observable로 변경
+.map {
+    $0.map { "\($0)" }
+}
     .map { numbers in
-        var numberList = numbers
-        numberList.insert("-", at: 3)
-        numberList.insert("-", at: 8)
-        let number = numberList.reduce(" ",+)
-        return number
-    }
+    var numberList = numbers
+    numberList.insert("-", at: 3)
+    numberList.insert("-", at: 8)
+    let number = numberList.reduce(" ", +)
+    return number
+}
     .subscribe(onNext: {
-        print($0)
-    })
+    print($0)
+})
     .disposed(by: disposeBag)
 
 input.onNext(10)

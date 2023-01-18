@@ -70,7 +70,7 @@ behaviorSubject.subscribe {
 //    print($0)
 //})
 // 위 처럼 Observable의 값만 뽑아 낼 수 있다.
-let value = try? behaviorSubject.value()
+let value = try? behaviorSubject.value().count
 print(value) // onNext 안의 값을 뽑아낼 수 있는 것이다
 // 잘 쓰지는 않음
 

@@ -28,10 +28,9 @@ class RepositoryListCell: UITableViewCell {
         }
         
         //MARK: Step1. Repository.swift에 정의한 내용을 UIComponent로 가져오기
-        
         guard let repository = repository else { return }
         nameLabel.text = repository.name
-        nameLabel.font = .systemFont(ofSize: 15)
+        nameLabel.font = .systemFont(ofSize: 20, weight: .bold)
         
         descriptionLabel.text = repository.description
         descriptionLabel.font = .systemFont(ofSize: 15)
@@ -47,16 +46,20 @@ class RepositoryListCell: UITableViewCell {
         languageLabel.font = .systemFont(ofSize: 16)
         languageLabel.textColor = .gray
         
+        
+        //MARK: Step2. SnapKit으로 UI구성하기
         nameLabel.snp.makeConstraints {
-            $0.top.leading.trailing.equalToSuperview().inset(18)
+            $0.top.leading.trailing.equalToSuperview().inset(18) // inset: superview와의 간격에 사용
         }
         
         descriptionLabel.snp.makeConstraints {
             $0.top.equalTo(nameLabel.snp.bottom)
+            $0.leading.equalTo(nameLabel)
+            $0.trailing.equalTo(nameLabel)
         }
         
         starImageView.snp.makeConstraints {
-            $0.top.equalTo(descriptionLabel.snp.bottom).offset(18)
+            $0.top.equalTo(descriptionLabel.snp.bottom).offset(18) // offset: element와의 간격에 사용
             $0.leading.equalTo(descriptionLabel)
             $0.width.height.equalTo(20)
             $0.bottom.equalToSuperview().inset(18)
