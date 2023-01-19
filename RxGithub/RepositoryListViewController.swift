@@ -9,12 +9,16 @@ import UIKit
 import RxSwift
 import RxCocoa
 
+public class SimpleError: Error {
+    public init() { }
+}
+
 class RepositoryListViewController: UITableViewController {
     private let organization = "KW-My-Sheet"
     private let repositories = BehaviorSubject<[Repository]>(value: []) // 초기 선언이므로 빈 배열 !
     private let disposeBag = DisposeBag()
     //    private let repositories = [Repository] // Swift를 이용한 과거방식
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = organization + " Repositories"
@@ -33,6 +37,13 @@ class RepositoryListViewController: UITableViewController {
     @objc func refresh() {
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { return }
+
+            print("break 1")
+
+            print("break 2")
+
+            print("break 3")
+
             self.fetchRepositories(of: self.organization)
         } // UI 안쓰니까 .global 사용 (Rx - Binding으로 처리가능)
     }
@@ -40,46 +51,47 @@ class RepositoryListViewController: UITableViewController {
     //MARK: 각각의 Operator에 요소들을 심어놓을 수 있음 -> 걸러질 때 마다 비동기 프로그래밍이 가능 !
     func fetchRepositories(of organization: String) {
         Observable.from([organization]) // 배열만 이용할 수 있으므로
-            .map { organization -> URL in
-                
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("organization: \(organization)")
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                
+        .map { organization -> URL in //MARK: 타입 변경할 때도 map이 유용하다.
+
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("organization: \(organization) thread in organization: \(Thread.current)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+
             return URL(string: "https://api.github.com/orgs/\(organization)/repos")!
-            } // String타입의 organization을 받아서 URL 타입으로 리턴하겠다 !
-            .map { url -> URLRequest in
-                
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("url: \(url)")
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+        } // String타입의 organization을 받아서 URL 타입으로 리턴하겠다 !
+        .map { url -> URLRequest in
+
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("url: \(url) thread in url: \(Thread.current)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
 
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
             return request
-            } // URL타입의 url을 받아서 URLRequest 타입으로 리턴하겠다!
-            .flatMap { request -> Observable<(response: HTTPURLResponse, data: Data)> in
-                
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("request: \(request)")
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                
+        } // URL타입의 url을 받아서 URLRequest 타입으로 리턴하겠다!
+        .flatMap { request -> Observable<(response: HTTPURLResponse, data: Data)> in
+
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("request: \(request) thread in request: \(Thread.current)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+//                return Observable.error(SimpleError()) //MARK: flatMap안에서의 에러 표현
+
             return URLSession.shared.rx.response(request: request)
-            } // Tuple의 형태를 띄는 Observable 시퀀스로 반환
-            .filter { response, _ in // Tuple 내에서 response만 받기 위해 _ 표시
-                
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("response: \(response)")
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                
+        } // Tuple의 형태를 띄는 Observable 시퀀스로 반환
+        .filter { response, _ in // Tuple 내에서 response만 받기 위해 _ 표시
+
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("response: \(response) thread in response: \(Thread.current)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+
             return 200..<300 ~= response.statusCode // responds.statusCode가 해당범위에 해당하면 true
         }
             .map { _, data -> [[String: Any]] in
-                
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("data: \(data)")
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                
+
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("data: \(data) thread in data: \(Thread.current)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+
             guard let json = try? JSONSerialization.jsonObject(with: data, options: []),
                 let result = json as? [[String: Any]] else {
                 return []
@@ -87,20 +99,22 @@ class RepositoryListViewController: UITableViewController {
             return result
         }
             .filter { objects in // 빈 Array(연결 실패)는 안 받을래 !
-                
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("objects: \(objects)")
-                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                
+
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("objects: \(objects) thread in objects: \(Thread.current)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+
             return objects.count > 0
         }
-            .map { objects in                 // compactMap: 1차원 배열에서 nil을 제거하고 옵셔널 바인딩
+            .map { objects in // compactMap: 1차원 배열에서 nil을 제거하고 옵셔널 바인딩
+            //throw SimpleError() //MARK: map안에서의 에러 표현
+
             return objects.compactMap { dic -> Repository? in
-                
+
                 print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("dic: \(dic)")
+                print("dic: \(dic) thread in dic: \(Thread.current)") //MARK: 몇 번 쓰레드에서 돌아가는 지 까지 확인 가능 !
                 print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                
+
                 guard let id = dic["id"] as? Int,
                     let name = dic["name"] as? String,
                     let description = dic["description"] as? String,
@@ -112,21 +126,61 @@ class RepositoryListViewController: UITableViewController {
                 return Repository(id: id, name: name, description: description, stargazersCount: stargazersCount, language: language)
             }
         } //MARK: [[dic_1],[dic_2],[dic_3]]이 compactMap을 통해 [dic_1] -> Repository로 각각 리턴
-            .subscribe(onNext: { [weak self] newRepositories in
-                // 위에서 리턴된 3개를 각각 구독 -> 바로 이벤트 생성하여 BehaviorSubject로 하여금 방출하도록.
+        //MARK: - 이 라인을 기준으로 global/main 구분 ! -> DispatchQueue를 쓰지않고 동시에 main 쓰레드에서 UI를 띄울수 있다.
+            .subscribe(on: ConcurrentDispatchQueueScheduler(queue: .global()))
+            .observe(on: MainScheduler.instance)
+//            .subscribe(onNext: { [weak self] newRepositories in
+//                // 위에서 리턴된 3개를 각각 구독 -> 바로 이벤트 생성하여 BehaviorSubject로 하여금 방출하도록.
+//                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+//                print("newRepositories: \(newRepositories)")
+//                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+//
+//            self?.repositories.onNext(newRepositories) // BehaviorSubject에 이벤트 발생
+////            DispatchQueue.main.async {
+//                self?.alertAction()
+//                self?.tableView.reloadData()
+//                self?.refreshControl?.endRefreshing()
+////            }
+//        })
+        .subscribe { event in //MARK: 에러처리에 용이한 subscribe 트릭
+            
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("MyEvent: \(event)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            
+            switch event {
+            case .next(let newRepositories):
                 print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                print("newRepositories: \(newRepositories)")
+                print("newRepositories: \(newRepositories), thread in newRepositories: \(Thread.current)")
                 print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-                
-            self?.repositories.onNext(newRepositories) // BehaviorSubject에 이벤트 발생
-
-            DispatchQueue.main.async {
-                self?.tableView.reloadData()
-                self?.refreshControl?.endRefreshing()
+                self.repositories.onNext(newRepositories) // BehaviorSubject에 이벤트 발생
+                self.tableView.reloadData()
+                self.refreshControl?.endRefreshing()
+            case .error(let error):
+                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+                print("error: \(error), thread: \(Thread.current)")
+                print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+                self.refreshControl?.endRefreshing()
+                self.alertAction()
+            case .completed:
+                print("completed")
             }
-        })
+
+        }
             .disposed(by: disposeBag)
     }
+
+    func alertAction() {
+        let optionMenu = UIAlertController(title: "에러", message: "네트워크 상태를 확인하세요.", preferredStyle: .alert)
+
+        let Action = UIAlertAction(title: "확인", style: .cancel, handler: {
+            (alert: UIAlertAction!) -> Void in
+            print("확인")
+        })
+        optionMenu.addAction(Action)
+        self.present(optionMenu, animated: true, completion: nil)
+    }
+
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         do {

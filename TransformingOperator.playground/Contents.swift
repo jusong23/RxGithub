@@ -15,13 +15,9 @@ Observable.of("A", "B", "C")
 print("----map----")
 Observable.of(Date())
     .map { date -> String in
-    print(date)
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd"
     dateFormatter.locale = Locale(identifier: "ko_KR")
-
-    print(dateFormatter.string(from: date))
-
     return dateFormatter.string(from: date)
 }
     .subscribe(onNext: {
