@@ -71,10 +71,14 @@ class RepositoryListViewController: UITableViewController {
                 let result = json as? [[String: Any]] else {
                 return []
             }
-            throw SimpleError()
             return result
         }
         .map { objects in // compactMap: 1차원 배열에서 nil을 제거하고 옵셔널 바인딩
+            
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            print("objects: \(objects) thread in objects: \(Thread.current)")
+            print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+            
             return objects.compactMap { dic -> Repository? in
                 guard let id = dic["id"] as? Int,
                     let name = dic["name"] as? String,
