@@ -46,7 +46,6 @@ class RepositoryListCell: UITableViewCell {
         languageLabel.font = .systemFont(ofSize: 16)
         languageLabel.textColor = .gray
         
-        
         //MARK: Step2. SnapKit으로 UI구성하기
         nameLabel.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview().inset(18) // inset: superview와의 간격에 사용
@@ -77,4 +76,6 @@ class RepositoryListCell: UITableViewCell {
         
     }
 }
+
+
 
